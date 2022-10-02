@@ -1,0 +1,19 @@
+body {
+    font-family: "Comic Sans MS", "Comic Sans", cursive;
+    background-color: #e1f2fe;
+    color: #050401
+    
+}
+button{
+    background-color: #1c77c3;
+    border-width: medium;
+    color: #050401;
+    padding: 12px 27px;
+    text-align: left;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+}
+.game{
+    border: 1px solid;
+}

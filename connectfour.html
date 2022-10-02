@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reese's Bangin' Site</title>
+  <link rel="stylesheet" href="four.css">
+</head>
+<body>
+    
+    <h1>Connecting Quads!</h1>
+    <table class="game">
+        <tr>
+            <td>
+                <canvas id="connect4" width="448" height="384"></canvas>
+                <script src="four.js"></script>
+                <noscript>You need to enable JavaScript to view the full site.</noscript>
+            </td>
+            <td id="Score"> </td>
+        </tr>
+        <tr>
+            <td>
+                <table class="controller">
+                    <tr>
+                       <th><button onclick="makeMove(0)"></button></th>
+                       <th><button onclick="makeMove(1)"></button></th>
+                       <th><button onclick="makeMove(2)"></button></th>
+                       <th><button onclick="makeMove(3)"></button></th>
+                       <th><button onclick="makeMove(4)"></button></th>
+                       <th><button onclick="makeMove(5)"></button></th>
+                       <th><button onclick="makeMove(6)"></button></th>
+                   </tr>
+               </table> 
+            </td>
+        </tr>
+    </table>
+</body>
+</html>
