@@ -5,7 +5,7 @@ const width = 448;
 var over = 0;
 initializeBoard();
 drawBoard();
-
+ 
 
 function drawBoard()
 {
@@ -51,7 +51,6 @@ function initializeBoard()
         }
     }
 }
-
 function makeMove(x)
 {
     if (board[x][0] != 0 || over == 1)
@@ -76,6 +75,21 @@ function makeMove(x)
         }
     }
 }
+function opponentMove()
+{
+    
+    while(true){
+        x = Math.floor(Math.random() * 7);  //Random number 0 - 6
+        for (let y = 5; y >= 0; y--)
+        {
+            if (board[x][y] == 0)
+            {
+                return x;
+            }
+        }
+    }
+    
+}
 function drawWinner()
 {
     ctx.beginPath();
@@ -94,7 +108,14 @@ function drawWinner()
     }
     ctx.fill();
 }
-
+function doTurn(x)
+{
+    var result = makeMove(x);
+    if (result != -1)
+    {
+        makeMove(opponentMove());
+    }
+}
 function checkBoard()
 {
     for (let x = 0; x < 7; x++)
