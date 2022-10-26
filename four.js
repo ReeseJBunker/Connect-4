@@ -1,12 +1,15 @@
 
-const board = new Array(7);
+const board = new Array(42);
 var turn = 1;
 const width = 448;
-var over = 0;
+var gameOver = false;
 initializeBoard();
 drawBoard();
  
-
+function boardIndex(x, y)
+{
+    return (x * 7) + y;
+}
 function drawBoard()
 {
     const canvas = document.getElementById("connect4");
@@ -22,11 +25,11 @@ function drawBoard()
             {
                 ctx.beginPath();
                 ctx.arc((x * diameter) + (diameter/2), (y * diameter)+(diameter/2), diameter*.375, 0, 2 * Math.PI)
-                if (board[x][y] == 1)
+                if (board[boardIndex(x, y)] == 1)
                 {
                     ctx.fillStyle = "rgb(249, 219, 109)";
                 }
-                else if (board[x][y] == 2)
+                else if (board[boardIndex(x, y)] == 2)
                 {
                     ctx.fillStyle = "rgb(232, 49, 81)";
                 }
@@ -44,61 +47,95 @@ function initializeBoard()
 {
     for (let x = 0; x < 7; x++)
     {
-        board[x] = new Array(6);
         for (let y = 0; y < 6; y++)
         {
-            board[x][y] = 0;
+            board[boardIndex(x, y)] = 0;
         }
     }
 }
-function makeMove(x)
+function makeMove(x, inBoard)
 {
-    if (board[x][0] != 0 || over == 1)
+    if (inBoard[boardIndex(x, 0)] != 0 || gameOver == 1)
     {
         return -1;
     }
     for (let y = 5; y >= 0; y--)
     {
-        if (board[x][y] == 0)
+        if (inBoard[boardIndex(x, y)] == 0)
         {
-            board[x][y] = turn;
+            inBoard[boardIndex(x, y)] = turn;
             drawBoard();
-            
-            if (turn == 1)
-            {
-                turn = 2;
-            }else{
-                turn = 1;
-            }
-            over = checkBoard();
             return 0;
         }
     }
 }
 function opponentMove()
 {
-    
-    while(true){
-        x = Math.floor(Math.random() * 7);  //Random number 0 - 6
-        for (let y = 5; y >= 0; y--)
+    bestScore = -42; // This score is definitely not possible
+    bestRow = 3;
+    var tempBoard = new Array(42);
+    for (let x = 0; x < 7; x++) //Checking each possible move
+    {
+        tempBoard = board.slice();
+        makeMove(x, tempBoard);
+        var val = minMax(tempBoard, 3, true);
+        if (val > bestScore)
         {
-            if (board[x][y] == 0)
-            {
-                return x;
-            }
+            bestScore = val;
+            bestRow = x;
         }
+        console.log(x + ": " + val)
     }
     
+    return bestRow;
+}
+function minMax(inBoard, depth, maximize)
+{
+    var max = -42;
+    var min = 42;
+    var tempBoard = inBoard.slice 
+    if (depth == 0)
+    {
+        return score(inBoard);
+    }
+    if (maximize)
+    {
+        for (let x = 0; x < 7; x++) //Checking each possible move
+        {
+            tempBoard = inBoard.slice();
+            makeMove(x, tempBoard);
+            var tempMax = minMax(tempBoard, depth - 1, false);
+            if (tempMax > max)
+            {
+                max = tempMax;
+            }
+        }
+        return max;
+    }
+    else
+    {
+        for (let x = 0; x < 7; x++) //Checking each possible move
+        {
+            tempBoard = inBoard.slice();
+            makeMove(x, tempBoard);
+            var tempMin = minMax(tempBoard, depth - 1, true);
+            if (tempMin < min)
+            {
+                min = tempMin;
+            }
+        }
+        return min;
+    }
 }
 function drawWinner()
 {
     ctx.beginPath();
     ctx.arc((x * diameter) + (diameter/2), (y * diameter)+(diameter/2), diameter*.375, 0, 2 * Math.PI)
-    if (board[x][y] == 1)
+    if (board[boardIndex(x, y)] == 1)
     {
         ctx.fillStyle = "rgb(249, 219, 109)";
     }
-    else if (board[x][y] == 2)
+    else if (board[boardIndex(x, y)] == 2)
     {
         ctx.fillStyle = "rgb(232, 49, 81)";
     }
@@ -110,55 +147,94 @@ function drawWinner()
 }
 function doTurn(x)
 {
-    var result = makeMove(x);
-    if (result != -1)
+    if (gameOver == 1)
     {
-        makeMove(opponentMove());
+        document.getElementById("Score").innerHTML = "winner: p" + turn;
+        return -1;
     }
+    while (makeMove(x, board) == -1)
+    {
+    }
+    if (checkBoard(board) === true)
+    {
+        document.getElementById("Score").innerHTML = "winner: p" + turn;
+        gameOver = 1;
+        return 1;
+    }
+    turn = 2
+    makeMove(opponentMove(), board);
+    if (checkBoard(board) === true)
+    {
+        document.getElementById("Score").innerHTML = "winner: p" + turn;
+        gameOver = 1;
+        return 1;
+    }
+    turn = 1;
+    document.getElementById("Score").innerHTML = "score: " + score(board);
 }
-function checkBoard()
+function score(testBoard)
 {
+    var score = 0;
+    for (let x = 0; x < 42; x++)
+    {
+        if(testBoard[x] == 0)
+        {
+            testBoard[x] = 1;
+            if(checkBoard(testBoard))
+            {
+                score++;
+            }
+            testBoard[x] = 2;
+            if(checkBoard(testBoard))
+            {
+                score--;
+            }
+            testBoard[x] = 0;
+        }
+        
+    }
+    return score;
+}
+function checkBoard(inBoard)
+{
+    var winner = 0;
     for (let x = 0; x < 7; x++)
     {
         for(let y = 0; y < 6; y++)
         {
-            var winner = board[x][y];
+            winner = inBoard[boardIndex(x, y)];
             if (winner != 0)
             {
                 if (x < 4)
                 {
-                    if (board[x+1][y] == winner && board[x+2][y] == winner && board[x+3][y] == winner)
+                    if (inBoard[boardIndex(x+1, y)] == winner && inBoard[boardIndex(x+2, y)] == winner && inBoard[boardIndex(x+3, y)] == winner)
                     {
-                        document.getElementById("Score").innerHTML = "winner: p" + winner;
-                        return 1;   //1 means game is over
+                        return true;
                     }
                 }
                 if (y < 3)
                 {
-                    if (board[x][y+1] == winner && board[x][y+2] == winner && board[x][y+3] == winner)
+                    if (inBoard[boardIndex(x, y+1)] == winner && inBoard[boardIndex(x, y+2)] == winner && inBoard[boardIndex(x, y+3)] == winner)
                     {
-                        document.getElementById("Score").innerHTML = "winner: p" + winner;
-                        return 1;
+                        return true;
                     }
                 }
                 if (y < 3 && x < 4)
                 {
-                    if (board[x+1][y+1] == winner && board[x+2][y+2] == winner && board[x+3][y+3] == winner)
+                    if (inBoard[boardIndex(x+1, y+1)] == winner && inBoard[boardIndex(x+2, y+2)] == winner && inBoard[boardIndex(x+3, y+3)] == winner)
                     {
-                        document.getElementById("Score").innerHTML = "winner: p" + winner;
-                        return 1;
+                        return true;
                     }
                 }
                 if (y < 3 && x > 2)
                 {
-                    if (board[x-1][y+1] == winner && board[x-2][y+2] == winner && board[x-3][y+3] == winner)
+                    if (inBoard[boardIndex(x-1, y+1)] == winner && inBoard[boardIndex(x-2, y+2)] == winner && inBoard[boardIndex(x-3, y+3)] == winner)
                     {
-                        document.getElementById("Score").innerHTML = "winner: p" + winner;
-                        return 1;
+                        return true;
                     }
                 }
             }
         }
     }
-    return 0;
+    return false;
 }
