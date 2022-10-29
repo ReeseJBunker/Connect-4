@@ -1,6 +1,5 @@
 
 const board = new Array(42);
-var turn = 1;
 const width = 448;
 var gameOver = false;
 initializeBoard();
@@ -53,7 +52,7 @@ function initializeBoard()
         }
     }
 }
-function makeMove(x, inBoard)
+function makeMove(x, inBoard, turn)
 {
     if (inBoard[boardIndex(x, 0)] != 0 || gameOver == 1)
     {
@@ -71,30 +70,38 @@ function makeMove(x, inBoard)
 }
 function opponentMove()
 {
-    bestScore = -42; // This score is definitely not possible
-    bestRow = 3;
+    bestScore = 100; // This score is definitely not possible
+    bestRow = -1;
     var tempBoard = new Array(42);
     for (let x = 0; x < 7; x++) //Checking each possible move
     {
         tempBoard = board.slice();
-        makeMove(x, tempBoard);
-        var val = minMax(tempBoard, 3, true);
-        if (val > bestScore)
+        if (makeMove(x, tempBoard, 2) != -1)
         {
-            bestScore = val;
-            bestRow = x;
+            var val = minMax(tempBoard, 4, true, 1);
+            if (val < bestScore)
+            {
+                bestScore = val;
+                bestRow = x;
+            }
+            console.log(x + ": " + val);
         }
-        console.log(x + ": " + val)
+        else 
+        {
+            console.log(x + " is not a valid move");
+        }
+        
     }
     
     return bestRow;
 }
-function minMax(inBoard, depth, maximize)
+function minMax(inBoard, depth, maximize, turn)
 {
     var max = -42;
     var min = 42;
-    var tempBoard = inBoard.slice 
-    if (depth == 0)
+    var tempBoard = inBoard.slice();
+    var currentScore = score(inBoard)
+    if (depth == 0 || currentScore > 30 || currentScore < -30)
     {
         return score(inBoard);
     }
@@ -103,8 +110,8 @@ function minMax(inBoard, depth, maximize)
         for (let x = 0; x < 7; x++) //Checking each possible move
         {
             tempBoard = inBoard.slice();
-            makeMove(x, tempBoard);
-            var tempMax = minMax(tempBoard, depth - 1, false);
+            makeMove(x, tempBoard, turn);
+            var tempMax = minMax(tempBoard, depth - 1, false, 2);
             if (tempMax > max)
             {
                 max = tempMax;
@@ -117,8 +124,8 @@ function minMax(inBoard, depth, maximize)
         for (let x = 0; x < 7; x++) //Checking each possible move
         {
             tempBoard = inBoard.slice();
-            makeMove(x, tempBoard);
-            var tempMin = minMax(tempBoard, depth - 1, true);
+            makeMove(x, tempBoard, turn);
+            var tempMin = minMax(tempBoard, depth - 1, true, 1);
             if (tempMin < min)
             {
                 min = tempMin;
@@ -152,20 +159,20 @@ function doTurn(x)
         document.getElementById("Score").innerHTML = "winner: p" + turn;
         return -1;
     }
-    while (makeMove(x, board) == -1)
+    while (makeMove(x, board, 1) == -1)
     {
     }
-    if (checkBoard(board) === true)
+    if (checkBoard(board) == 1)
     {
-        document.getElementById("Score").innerHTML = "winner: p" + turn;
+        document.getElementById("Score").innerHTML = "winner: p" + 1;
         gameOver = 1;
         return 1;
     }
     turn = 2
-    makeMove(opponentMove(), board);
-    if (checkBoard(board) === true)
+    makeMove(opponentMove(), board, 2);
+    if (checkBoard(board) == 2)
     {
-        document.getElementById("Score").innerHTML = "winner: p" + turn;
+        document.getElementById("Score").innerHTML = "winner: p" + 2;
         gameOver = 1;
         return 1;
     }
@@ -174,18 +181,28 @@ function doTurn(x)
 }
 function score(testBoard)
 {
+
     var score = 0;
+    var winner = checkBoard(testBoard);
+    if (winner == 1)
+    {
+        score = score + 42;
+    }
+    else if (winner == 2)
+    {
+        score = score - 42;
+    }
     for (let x = 0; x < 42; x++)
     {
         if(testBoard[x] == 0)
         {
             testBoard[x] = 1;
-            if(checkBoard(testBoard))
+            if(checkBoard(testBoard) == 1)
             {
                 score++;
             }
             testBoard[x] = 2;
-            if(checkBoard(testBoard))
+            if(checkBoard(testBoard) == 2)
             {
                 score--;
             }
@@ -209,32 +226,32 @@ function checkBoard(inBoard)
                 {
                     if (inBoard[boardIndex(x+1, y)] == winner && inBoard[boardIndex(x+2, y)] == winner && inBoard[boardIndex(x+3, y)] == winner)
                     {
-                        return true;
+                        return winner;
                     }
                 }
                 if (y < 3)
                 {
                     if (inBoard[boardIndex(x, y+1)] == winner && inBoard[boardIndex(x, y+2)] == winner && inBoard[boardIndex(x, y+3)] == winner)
                     {
-                        return true;
+                        return winner;
                     }
                 }
                 if (y < 3 && x < 4)
                 {
                     if (inBoard[boardIndex(x+1, y+1)] == winner && inBoard[boardIndex(x+2, y+2)] == winner && inBoard[boardIndex(x+3, y+3)] == winner)
                     {
-                        return true;
+                        return winner;
                     }
                 }
                 if (y < 3 && x > 2)
                 {
                     if (inBoard[boardIndex(x-1, y+1)] == winner && inBoard[boardIndex(x-2, y+2)] == winner && inBoard[boardIndex(x-3, y+3)] == winner)
                     {
-                        return true;
+                        return winner;
                     }
                 }
             }
         }
     }
-    return false;
+    return -1;
 }
