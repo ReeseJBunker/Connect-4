@@ -1,38 +1,72 @@
+/**
+ * Runs a game of connect-4, and generating the moves for player 2
+ *
+ * @author: Reese J Bunker
+ */
 
-const board = new Array(42);
-const width = 448;
-var gameOver = false;
-initializeBoard();
+//Global Variables 
+
+
+/** 0<---------( x )---------6
+ *  0   6   12  18  24  30  36   0
+ *  1   7   13  19  25  31  37   ^
+ *  2   8   14  20  26  32  38 ( y )
+ *  3   9   15  21  27  33  39   |
+ *  4   10  16  22  28  34  40   V
+ *  5   11  17  24  29  35  41   5
+ */
+const board = new Array(42);    //Game Board
+
+var gameOver = false;           //Global Variable for if the game is over
+
+//When four.js is first run
+initializeBoard();       
 drawBoard();
  
+/**
+ * Returns board index for an x and y pair
+ *
+ * @param {number} x The x coordinate on board
+ * @param {number} y The y coordinate on board
+ * @return {number} corresponding array location
+ */
 function boardIndex(x, y)
 {
     return (x * 7) + y;
 }
+
+/**
+ * Draws the connect 4 board on the canvas
+ */
 function drawBoard()
 {
-    const canvas = document.getElementById("connect4");
-    if (canvas.getContext) {
+    const canvas = document.getElementById("connect4");  
+    var pieceSize = .375;
+    
+    if (canvas.getContext) {                                    //If the canvas exists
         const ctx = canvas.getContext("2d");
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.fillStyle = "rgb(28, 119, 195)";
-        ctx.fillRect(0, 0, width, (width/7) * 6);
-        var diameter = width/7;
-        for (let y = 0; y < 6; y++)
+        ctx.clearRect(0, 0, canvas.width, canvas.height);       //clean the canvas
+        ctx.fillStyle = "rgb(28, 119, 195)";                    //Blue color
+        ctx.fillRect(0, 0, canvas.width, (canvas.width/7) * 6); //Draw's blue board       
+        var diameter = canvas.width/7;                          //Diameter of the circle given board width
+
+        for (let y = 0; y < 6; y++)         //Each space on the board
         {
             for (let x = 0; x < 7; x++)
             {
                 ctx.beginPath();
-                ctx.arc((x * diameter) + (diameter/2), (y * diameter)+(diameter/2), diameter*.375, 0, 2 * Math.PI)
-                if (board[boardIndex(x, y)] == 1)
+                        //(center.x, center y, size, start angle, end angle)
+                ctx.arc((x * diameter) + (diameter/2), (y * diameter)+(diameter/2), diameter*pieceSize, 0, 2 * Math.PI)  //Draw a circle 
+
+                if (board[boardIndex(x, y)] == 1)                      //Player one is yellow
                 {
-                    ctx.fillStyle = "rgb(249, 219, 109)";
+                    ctx.fillStyle = "rgb(249, 219, 109)";   
                 }
-                else if (board[boardIndex(x, y)] == 2)
+                else if (board[boardIndex(x, y)] == 2)                 //Player 2 is red
                 {
                     ctx.fillStyle = "rgb(232, 49, 81)";
                 }
-                else
+                else                                                    //empty space
                 {
                     ctx.fillStyle = "rgb(225, 242, 254)";
                 }
@@ -42,6 +76,9 @@ function drawBoard()
     }
 }
 
+/**
+ * Initializes board to the starting position 
+ */
 function initializeBoard()
 {
     for (let x = 0; x < 7; x++)
@@ -52,6 +89,47 @@ function initializeBoard()
         }
     }
 }
+
+/**
+ * This function is called when a player presses a button to play
+ *
+ * @param {number} x the row the player would like to play
+ */
+function doTurn(x)
+{
+    if (gameOver == 1)
+    {
+        document.getElementById("Score").innerHTML = "winner: p" + turn;
+        return -1;
+    }
+    while (makeMove(x, board, 1) == -1)
+    {
+    }
+    if (checkBoard(board) == 1)
+    {
+        document.getElementById("Score").innerHTML = "winner: p" + 1;
+        gameOver = 1;
+        return 1;
+    }
+    turn = 2
+    makeMove(opponentMove(), board, 2);
+    if (checkBoard(board) == 2)
+    {
+        document.getElementById("Score").innerHTML = "winner: p" + 2;
+        gameOver = 1;
+        return 1;
+    }
+    turn = 1;
+    document.getElementById("Score").innerHTML = "score: " + score(board);
+}
+
+/**
+ * Place
+ *
+ * @param {number} x The x coordinate on board
+ * @param {number} y The y coordinate on board
+ * @return {number} corresponding array location
+ */
 function makeMove(x, inBoard, turn)
 {
     if (inBoard[boardIndex(x, 0)] != 0 || gameOver == 1)
@@ -152,58 +230,36 @@ function drawWinner()
     }
     ctx.fill();
 }
-function doTurn(x)
-{
-    if (gameOver == 1)
-    {
-        document.getElementById("Score").innerHTML = "winner: p" + turn;
-        return -1;
-    }
-    while (makeMove(x, board, 1) == -1)
-    {
-    }
-    if (checkBoard(board) == 1)
-    {
-        document.getElementById("Score").innerHTML = "winner: p" + 1;
-        gameOver = 1;
-        return 1;
-    }
-    turn = 2
-    makeMove(opponentMove(), board, 2);
-    if (checkBoard(board) == 2)
-    {
-        document.getElementById("Score").innerHTML = "winner: p" + 2;
-        gameOver = 1;
-        return 1;
-    }
-    turn = 1;
-    document.getElementById("Score").innerHTML = "score: " + score(board);
-}
+
 function score(testBoard)
 {
-
     var score = 0;
     var winner = checkBoard(testBoard);
+    var winningSquare = new Array(42);      //keeps track of squares that will win the game
     if (winner == 1)
     {
-        score = score + 42;
+        return 42;
     }
     else if (winner == 2)
     {
-        score = score - 42;
+        return -42;
     }
     for (let x = 0; x < 42; x++)
     {
         if(testBoard[x] == 0)
         {
+            winningSquare[x] = 0;
             testBoard[x] = 1;
             if(checkBoard(testBoard) == 1)
             {
                 score++;
+                winningSquare[x] = 1;
             }
             testBoard[x] = 2;
             if(checkBoard(testBoard) == 2)
             {
+                if (winningSquare[x] != 1){winningSquare[x] = 2}
+                else{winningSquare[x] = 0}
                 score--;
             }
             testBoard[x] = 0;
